@@ -11,25 +11,49 @@ if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
   shiny,
   bslib,
-  bsicons
+  bsicons,
+  maps,
+  mapproj
 )
 
+source("helpers.R")
+# LOAD DATA ---------------------------------------------------------------
+
+countries <- readRDS("../data/counties.rds")
 
 # APP UI ------------------------------------------------------------------
 
 ui <- bslib::page_sidebar(
-  title = "EXPLORATORY DATA ANALYSIS",
-  sidebar = sidebar("Sidebar", title = "Filters"),
-  value_box(
-    title = "Total Pop",
-    value = "6,000,000,000",
-    fill = "green4",
-    showcase = bsicons::bs_icon("bar-chart")
+  # side bar
+  title = "censusVis",
+  
+  sidebar = sidebar(
+    helpText(
+      "Create demographic maps with information from the 2010 US Census."
+    ),
+    selectInput(
+      "var",
+      label = "Choose a variable to display",
+      choices =
+        c(
+          "white",
+          "black",
+          "hispanic",
+          "asian"
+        ),
+      selected = "white"
+    ),
+    sliderInput(
+      "range",
+      label = "Range of interest:",
+      min = 0, 
+      max = 100, 
+      value = c(0, 100)
+    )
   ),
-  card(
-    card_header("Map"),
-    card_footer("Disclaimer: This map does not in anyway reflect the views of UNFPA on International Boarders!")
-  ),
+  # map card
+  card(plotOutput("map")),
+  # language
   lang =  "en"
 )
 
@@ -37,7 +61,15 @@ ui <- bslib::page_sidebar(
 # APP SERVER --------------------------------------------------------------
 
 server <- function(input, output){
+  # update text box
+  output$map <- renderPlot({
+    percent_map(var = countries[[input$var]],
+                legend.title = "Map",
+                color = "green4")
+    #print("derrick")
+  })
   
+  # Update value_box
 }
 
 
